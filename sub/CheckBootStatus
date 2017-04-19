@@ -1,0 +1,12 @@
+sub CheckBootStatus()
+local whereismyfile$
+	whereismyfile$=system$("if test -e /boot/home/config/settings/boot/launch/MenuBar; then echo yeah; else echo nope;fi")
+	if left$(whereismyfile$,1)="y" then
+		menu set "⚙", "Start MenuBar on Bootup", "mark", "MainWindow" 
+		return 1
+	else
+		menu set "⚙", "Start MenuBar on Bootup", "plain", "MainWindow"
+		return 0
+	endif
+end sub
+

@@ -1,0 +1,18 @@
+sub MakeNewMenuEntry(theline$)
+	local a$(1), b$(1), c$(5), tokena, tokenb, tokenc, thepath$, thecategory$, theentry$, thepreface$, theepilogue$, concat$
+	theepilogue$ = ",,MainWindow"
+	tokena = token(theline$, a$(), "\t")
+	thepath$ = a$(1)
+	thecategory$ = a$(2)
+	tokenb = token(thepath$, b$(),"/")
+	theentry$ = b$(tokenb)
+		for f = 1 to 69
+		if category$(f) = thecategory$ then
+			thepreface$ = preface$(f)
+		endif
+	next f
+	concat$ =  thepreface$ + theentry$ + theepilogue$
+	tokenc= split(concat$, c$(), ",")
+	submenu c$(1),c$(2),c$(3),c$(4),c$(5)  
+end sub
+

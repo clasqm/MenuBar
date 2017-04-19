@@ -1,0 +1,31 @@
+sub MakeEditor()
+	local theline$
+	Window set "MainWindow", "resizeto", 510, 521
+	If view get "DropView", "exists" view remove "DropView"
+	if view get "EditView", "exists" View Remove "EditView"
+	VIEW 0,21 TO 510,521, "EditView", "MainWindow" 
+	redc = 241
+	greenc = 196
+	bluec = 59
+	draw set "highcolor", redc, greenc, bluec, "EditView"
+	for f = 0 to 500 step 2
+		draw line 0, f to 510,f, "EditView"
+	next f
+	Draw set "highcolor", 0,0,0, "EditView"
+	Text 12,10 to 495,24, "Editlabel", "When you are finished deleting entries, you will have to restart MenuBar.", "EditView"
+	text set "Editlabel", "align-center":
+	Listbox 12,38 to 495,455, "EntryDeleteBox", 1, "EditView"
+	Button 12,465 to 212,490, "EntryDeleteButton", "Delete This Entry", "EditView"
+	tooltip "EntryDeleteButton", "Select an entry,\nthen press this button to delete it."
+	Button 218,465 to 418,490, "EntrySaveButton", "Save Changes", "EditView"
+	tooltip "EntrySaveButton", "Save this collection\nto a new configuration file."
+	Button 424,465 to 495,490, "DropCancelButton", "Cancel", "EditView"
+	tooltip "DropCancelButton", "Return to MenuBar,\ndiscarding all changes."
+	open ConfigFile$ for reading as #1
+	repeat
+		line input #1 theline$
+		if theline$ <> "" listbox add "EntryDeleteBox", theline$
+	until(eof(1))
+	close #1
+end sub
+

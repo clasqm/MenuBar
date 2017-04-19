@@ -1,0 +1,9 @@
+sub SaveNewCFG()
+	local items
+	items = listbox count "EntryDeleteBox"
+	open ConfigFile$ for writing as #1
+		for f = 1 to items
+			Print #1 listbox get$ "EntryDeleteBox", f
+		next f
+end sub
+

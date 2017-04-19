@@ -1,0 +1,818 @@
+#!yab4ybd
+################################
+############# Prologue #############
+################################
+label TheStart
+
+//Yabadabbadoo notification
+########DO NOT RENAME THIS FILE!########
+//Yabadabbadoo needs it to function.
+
+##Fill in these fields with your own particulars.
+##The variables will be used in the About Box and in naming the program.
+
+ProgramName$ = "MenuBar"
+AuthorName$ = "Michel Clasquin-Johnson"
+ProgramVersion$ = "v0.1"
+ProgramBriefDescription$ = "A program-launching menu for the Haiku Desktop."
+ProgramLicense$ = "Public Domain"
+ProgramAcknowledgements$ ="With thanks to my long-suffering family, who bear my obsession with an obscure language for an obscure operating system with equanimity."
+
+//*************************
+//*****Global Variables****
+//*************************
+
+## Technically, yab does not require you to declare global variables,
+##It just is a really, really good idea to do it anyway.
+// set DEBUG = 1 to print out all messages on the console
+DEBUG = 1
+//change this to DEBUG = 0 when you are ready to bind the program for distribution
+HPMAppsDir$ = "/boot/system/data/deskbar/menu/Applications"
+HPMDemosDir$ = "/boot/system/data/deskbar/menu/Demos"
+HPMAppletsDir$ = "/boot/system/data/deskbar/menu/Desktop applets"
+HPMPrefsDir$ = "/boot/system/data/deskbar/menu/Preferences"
+UPMAppsDir$ = "/boot/home/config/data/deskbar/menu/Applications"
+UPMDemosDir$ = "/boot/home/config/data/deskbar/menu/Demos"
+UPMAppletsDir$ = "/boot/home/config/data/deskbar/menu/Desktop applets"
+UPMPrefsDir$ = "/boot/home/config/data/deskbar/menu/Preferences"
+UnPMAppsDir$ = "/boot/home/config/settings/deskbar/menu/Applications"
+UnPMDemosDir$ = "/boot/home/config/settings/deskbar/menu/Demos"
+UnPMAppletsDir$ = "/boot/home/config/settings/deskbar/menu/Desktop applets"
+UnPMPrefsDir$ = "/boot/home/config/settings/deskbar/menu/Preferences"
+UnPMDocsDir$ = "/boot/home/config/settings/deskbar/menu/Documents"
+UpdateFile$ = "http://mysite.mweb.co.za/residents/clasqm/haiku/yab-apps/menubarversion.txt"
+SelectedGroupNumber$ = ""
+SelectedGroupLabel$ = ""
+SelectedGroupCode$ = ""
+ConfigFile$ = "/boot/home/config/settings/MenuBar/MenuBar.cfg"
+ConfigStandardFile$ = "/boot/home/config/settings/MenuBar/MenuBarStandard.cfg"
+dim category$(69)
+dim preface$(69)
+
+##########################
+######Preliminary Commands#####
+##########################
+
+## Commands to run before the Main Loop come here.
+## e.g. setting up a window with a menu.
+
+system("mkdir -p /boot/home/config/settings/MenuBar")
+system("touch " + ConfigFile$)
+system("touch " + ConfigStandardFile$)
+
+OpenWindow()
+LoadEntries()
+
+#######End of Prologue#######
+
+
+//Yabadabbadoo notification
+########DO NOT RENAME THIS FILE!########
+//Yabadabbadoo needs it to function.
+
+//Main Message Loop
+dim msg$(1)
+while(not leavingLoop)
+	nCommands = token(message$, msg$(), "|")
+	for everyCommand = 1 to nCommands
+		if(DEBUG and msg$(everyCommand)<>"") print msg$(everyCommand)
+		switch(msg$(everyCommand))
+			case "_QuitRequested":
+			case "MainWindow:⚙:Quit MenuBar":
+				leavingLoop = true
+				break
+			case "DropCancelButton":
+				RemoveDropzone()
+				break
+			case "EntryDeleteButton"
+				DeleteItem()
+				break
+			case "EntrySaveButton"
+				SaveNewCFG()
+				RemoveDropzone()
+				break
+			case "MainWindow:⚙:Open Haiku PM folders:Applications":
+				OpenTracker(HPMAppsDir$)
+				break
+			case "MainWindow:⚙:Open Haiku PM folders:Demos":
+				OpenTracker(HPMDemosDir$)
+				break
+			case "MainWindow:⚙:Open Haiku PM folders:Desktop applets":
+				OpenTracker(HPMAppletsDir$)
+				break
+			case "MainWindow:⚙:Open Haiku PM folders:Preferences":
+				OpenTracker(HPMPrefsDir$)
+				break
+			case "MainWindow:⚙:Open User PM folders:Applications":
+				OpenTracker(UPMAppsDir$)
+				break
+			case "MainWindow:⚙:Open User PM folders:Demos":
+				OpenTracker(UPMDemosDir$)
+				break
+			case "MainWindow:⚙:Open User PM folders:Desktop applets":
+				OpenTracker(UPMAppletsDir$)
+				break
+			case "MainWindow:⚙:Open User PM folders:Preferences":
+				OpenTracker(UPMPrefsDir$)
+				break
+			case "MainWindow:⚙:Open User non-PM folders:Applications":
+				OpenTracker(UnPMAppsDir$)
+				break
+			case "MainWindow:⚙:Open User non-PM folders:Demos":
+				OpenTracker(UnPMDemosDir$)
+				break
+			case "MainWindow:⚙:Open User non-PM folders:Desktop applets":
+				OpenTracker(UnPMAppletsDir$)
+				break
+			case "MainWindow:⚙:Open User non-PM folders:Preferences":
+				OpenTracker(UnPMPrefsDir$)
+				break
+			case "MainWindow:⚙:Open User non-PM folders:Documents":
+				OpenTracker(UnPMDocsDir$)
+				break
+			case "MainWindow:⚙:Help":
+				ShowHelp()
+				break
+				case "MainWindow:⚙:Start MenuBar on Bootup":
+				MakeBootStatus()
+				break
+			case "MainWindow:⚙:About":
+				Alert ProgramName$ + " " + ProgramVersion$ + "\n" + "by " + AuthorName$ +"\n\n" + ProgramBriefDescription$ + "\n\n" + ProgramLicense$ + "\n\n" + ProgramAcknowledgements$, "OK", "none"
+				break
+			case "MainWindow:⚙:Restore Haiku standard set":
+				tempval = alert "Are you sure you want to go back to the apps that are included in a Haiku nightly distribution ONLY, removing ALL custom additions", "Yes", "No", "", "warning"
+				if tempval = 1 then
+					system("rm -f " + ConfigFile$)
+					Alert "You need to exit MenuBar and restart it to activate this change.", "OK", "info"
+				endif
+				break
+			case "MainWindow:⚙:Updates":
+				FindUpdates()
+				break
+			case "MainWindow:⚙:Remove Entries":
+				MakeEditor()
+				break
+			default:
+				break
+		end switch
+		//#####other commands#####
+		if right$(msg$(everyCommand), 11) = "<Add Entry>" then
+			GetSelectionDetails(msg$(everyCommand))
+			MakeDropzone()
+			break
+		elseif left$(msg$(everyCommand), 18) = "DropView:_Dropped:" then
+			MakeNewMenuEntry(mid$(msg$(everyCommand), 19) + "\t" + SelectedGroupNumber$)
+			SaveNewMenuEntry(mid$(msg$(everyCommand), 19) + "\t" + SelectedGroupNumber$)
+			RemoveDropzone()
+			break
+		elseif (msg$(everyCommand)) = "MainWindow:_Activated"
+			//Window set "MainWindow", "BGColor", 216,216,216
+			break 
+		elseif (msg$(everyCommand)) = "MainWindow:_Deactivated"
+			//Window set "MainWindow", "BGColor", 51,102,152
+			break 
+		else
+			LaunchIt(msg$(everyCommand))
+		endif
+	
+	next everyCommand
+wend
+
+CloseWindow()
+
+exit
+
+sub CheckBootStatus()
+local whereismyfile$
+	whereismyfile$=system$("if test -e /boot/home/config/settings/boot/launch/MenuBar; then echo yeah; else echo nope;fi")
+	if left$(whereismyfile$,1)="y" then
+		menu set "⚙", "Start MenuBar on Bootup", "mark", "MainWindow" 
+		return 1
+	else
+		menu set "⚙", "Start MenuBar on Bootup", "plain", "MainWindow"
+		return 0
+	endif
+end sub
+
+sub CloseWindow()
+	//Close down the main window
+	window close "MainWindow"
+end sub
+
+sub DeleteItem()
+	local item
+	item = listbox get "EntryDeleteBox"
+	if item = 0 return
+	listbox remove "EntryDeleteBox", item
+end sub
+
+sub EnterAppsFromFile(filename$)
+	filename$ = FileIsHere$(filename$, "")
+	if filename$ = "notfound" then 
+		alert "Configuration File not found!", "OK", "warning"
+		return
+	else
+		open filename$ for reading as #1
+		while (not(eof(1)))
+			line input #1 getline$
+			if getline$ <> "" MakeNewMenuEntry(getline$)
+		wend
+		close #1
+	endif	
+end sub
+
+sub EnterStandardApps()
+	//while we do this, set up the arrays for later use.
+	local preface$, category$, getline$
+	restore Categories
+	for f = 1 to 69
+		read category$
+		read preface$
+		category$(f) = category$
+		preface$(f) = preface$
+		next f
+	EnterAppsFromFile(ConfigStandardFile$)
+end sub
+
+sub FileIsHere$(FullPath$, MenuItem$)
+	local whereismyfile$,searchpath$
+	if FullPath$ <>"" then
+		whereismyfile$=system$("if test -e '" + FullPath$ + "'; then echo yeah; else echo nope;fi")
+			if left$(whereismyfile$,1)="y" then 
+				return FullPath$
+			else
+				return "notfound" 
+			endif
+	elseif MenuItem$ <> "" then
+		restore Paths
+		for f = 1 to 12
+			read searchpath$
+			searchpath$ = searchpath$ + MenuItem$
+			whereismyfile$=system$("if test -e '" + searchpath$ + "'; then echo yeah; else echo nope;fi")
+			if left$(whereismyfile$,1)="y" then 
+				return searchpath$
+			endif
+		next f
+	else
+		return "notfound"	
+	endif
+end sub
+
+sub FindUpdates()
+	local version$,selector
+	version$ = system$("curl --connect-timeout 1 " + UpdateFile$)
+	if left$(version$,1)<>"v" then
+		alert "Unable to connect to update server!", "OK", "warning"
+		return
+	endif
+	if version$ = ProgramVersion$ then
+		alert "You have the latest version of this program.", "OK", "info"
+		return
+	else
+		selector = alert "A newer version of this program is available. Take  a look?", "Yes", "No", "", "info"
+		if selector = 1 launch "http://mysite.mweb.co.za/residents/clasqm/haiku/yab-apps/index.html"
+	endif
+end sub
+
+sub GetSelectionDetails(Selection$)
+	local w$(4),tokens
+	tokens = token(Selection$, w$(),":")
+	if tokens <>4 then
+		alert "An unknown error has occurred", "OK", "warning"
+		return
+	endif
+	SelectedGroupNumber$ = left$(w$(4), 2)
+	SelectedGroupLabel$ = w$(2) + " | " + SelectedGroupNumber$ + ". " + w$(3)
+	SelectedGroupCode$ = "MainWindow:" +  w$(2) + ":" + w$(3)+ ":"
+end sub
+
+sub LaunchIt(thecommand$)
+	local w$(4),tokena,trythis$
+	tokena = token(thecommand$, w$(), ":")
+	Restore Paths
+	for f = 1 to 13
+		read trythis$
+		trythis$ = w$(tokena)
+		trythis$ = FileIsHere$("", trythis$)
+		if trythis$ <> "notfound" break
+	next f
+	if trythis$ = "notfound" then
+		alert "Program was not found on this system.", "OK", "info"
+		return 
+	else
+		launch trythis$
+	endif
+end sub
+
+sub LoadEntries()
+local redc, greenc, bluec
+	Window set "MainWindow", "resizeto", 510, 121
+	If view get "DropView", "exists" view remove "DropView"
+	if view get "EditView", "exists" View Remove "EditView"
+	View 0,22 to 510,121, "DropView", "MainWindow"
+	redc = 241
+	greenc = 196
+	bluec = 59
+	for f = 0 to 100 step 2
+		draw set "highcolor", redc, greenc, bluec, "DropView"
+		draw line 0, f to 510,f, "DropView"
+	next f
+	Draw set "highcolor", 0,0,0, "DropView"
+	Text 45,15 to 465,35, "Droplabel", "Creating Database of standard Haiku programs.", "DropView"
+	text set "Droplabel", "align-center":
+	MakeStandardFile()
+	wait 0.1
+	Text 45,40 to 465,60, "Droplabel2", "Entering Standard Programs into menu structure.", "DropView"
+	text set "Droplabel2", "align-center"
+	EnterStandardApps()
+	wait 0.1
+	Text 45,65 to 465,85, "Droplabel3", "Entering user-added menu entries into menu structure.", "DropView"
+	text set "Droplabel3", "align-center"
+	EnterAppsFromFile(ConfigFile$)
+	wait 0.3
+	RemoveDropzone()
+end sub
+
+sub MakeBootStatus()
+	local isit
+	isit = CheckBootStatus()
+	if isit = 0 system("ln -sf /boot/home/config/apps/MenuBar /boot/home/config/settings/boot/launch")
+	if isit = 1 system("rm -f /boot/home/config/settings/boot/launch/MenuBar")
+	CheckBootStatus()
+end sub
+
+sub MakeDropzone()
+	local redc, greenc, bluec
+	Window set "MainWindow", "resizeto", 510, 121
+	If view get "DropView", "exists" view remove "DropView"
+	if view get "EditView", "exists" View Remove "EditView"
+	View 0,22 to 510,121, "DropView", "MainWindow"
+	Text 45,15 to 465,35, "Droplabel", "Drop your program, shortcut or script into this space.", "DropView"
+	Text 45,40 to 465,60, "Droplabel2", "Your drop will be added to " + SelectedGroupLabel$ + ".", "DropView"
+	text set "Droplabel", "align-center": text set "Droplabel2", "align-center"
+	redc = 241
+	greenc = 196
+	bluec = 59
+	for f = 0 to 100 step 2
+		draw set "highcolor", redc, greenc, bluec, "DropView"
+		draw line 0, f to 510,f, "DropView"
+	next f
+	Draw set "highcolor", 0,0,0, "DropView"
+	View Dropzone "DropView"
+	Button 110,67 to 390,94, "DropCancelButton", "I changed my mind! Cancel this drop.", "DropView"
+	Button 110,23 to 390,50, "DropFlashButton", "Your program has been added and saved.", "DropView" 
+	option set "DropFlashButton", "visible", 0
+end sub
+
+sub MakeEditor()
+	local theline$
+	Window set "MainWindow", "resizeto", 510, 521
+	If view get "DropView", "exists" view remove "DropView"
+	if view get "EditView", "exists" View Remove "EditView"
+	VIEW 0,21 TO 510,521, "EditView", "MainWindow" 
+	redc = 241
+	greenc = 196
+	bluec = 59
+	draw set "highcolor", redc, greenc, bluec, "EditView"
+	for f = 0 to 500 step 2
+		draw line 0, f to 510,f, "EditView"
+	next f
+	Draw set "highcolor", 0,0,0, "EditView"
+	Text 12,10 to 495,24, "Editlabel", "When you are finished deleting entries, you will have to restart MenuBar.", "EditView"
+	text set "Editlabel", "align-center":
+	Listbox 12,38 to 495,455, "EntryDeleteBox", 1, "EditView"
+	Button 12,465 to 212,490, "EntryDeleteButton", "Delete This Entry", "EditView"
+	tooltip "EntryDeleteButton", "Select an entry,\nthen press this button to delete it."
+	Button 218,465 to 418,490, "EntrySaveButton", "Save Changes", "EditView"
+	tooltip "EntrySaveButton", "Save this collection\nto a new configuration file."
+	Button 424,465 to 495,490, "DropCancelButton", "Cancel", "EditView"
+	tooltip "DropCancelButton", "Return to MenuBar,\ndiscarding all changes."
+	open ConfigFile$ for reading as #1
+	repeat
+		line input #1 theline$
+		if theline$ <> "" listbox add "EntryDeleteBox", theline$
+	until(eof(1))
+	close #1
+end sub
+
+sub MakeMenu()
+	//Create menu in MainWindow
+	submenu "⚙", "Open Haiku PM folders", "Applications","", "MainWindow"
+	submenu "⚙", "Open Haiku PM folders", "Demos","", "MainWindow"
+	submenu "⚙", "Open Haiku PM folders", "Desktop applets","", "MainWindow"
+	submenu "⚙", "Open Haiku PM folders", "Preferences","", "MainWindow"
+	submenu "⚙", "Open User PM folders", "Applications","", "MainWindow"
+	submenu "⚙", "Open User PM folders", "Demos","", "MainWindow"
+	submenu "⚙", "Open User PM folders", "Desktop applets","", "MainWindow"
+	submenu "⚙", "Open User PM folders", "Preferences","", "MainWindow"
+	submenu "⚙", "Open User non-PM folders", "Applications","", "MainWindow"
+	submenu "⚙", "Open User non-PM folders", "Demos","", "MainWindow"
+	submenu "⚙", "Open User non-PM folders", "Desktop applets","", "MainWindow"
+	submenu "⚙", "Open User non-PM folders", "Preferences","", "MainWindow"
+	submenu "⚙", "Open User non-PM folders", "Documents","", "MainWindow"
+	menu "⚙", "Remove Entries", "", "MainWindow"
+	menu "⚙", "Restore Haiku standard set", "", "MainWindow"
+	menu "⚙", "Start MenuBar on Bootup", "", "MainWindow"
+	CheckBootStatus()
+	menu "⚙", "Quit MenuBar", "Q", "MainWindow"
+	menu "⚙", "Updates", "", "MainWindow"
+	menu "⚙", "Help", "", "MainWindow"
+	menu "⚙", "About", "", "MainWindow"
+	submenu "Audio", "Editors", "00 <Add Entry>","", "MainWindow"
+	submenu "Audio", "Encoders", "01 <Add Entry>","", "MainWindow"
+	submenu "Audio", "MIDI", "02 <Add Entry>","", "MainWindow"
+	submenu "Audio", "Players", "03 <Add Entry>","", "MainWindow"
+	submenu "Audio", "Playlists", "04 <Add Entry>","", "MainWindow"
+	submenu "Audio", "Recorders", "05 <Add Entry>","", "MainWindow"
+	submenu "Audio", "Sequencers", "06 <Add Entry>","", "MainWindow"
+	submenu "Audio", "Synthesizers", "07 <Add Entry>","", "MainWindow"
+	submenu "Audio", "Other", "08 <Add Entry>","", "MainWindow"
+	submenu "Dev", "Editors", "10 <Add Entry>", "", "MainWindow"
+	submenu "Dev", "IDEs", "11 <Add Entry>", "", "MainWindow"
+	submenu "Dev", "GUI Builders", "12 <Add Entry>", "", "MainWindow"
+	submenu "Dev", "Other", "13 <Add Entry>", "", "MainWindow"
+	submenu "Emu", "Computers", "20 <Add Entry>", "", "MainWindow"
+	submenu "Emu", "Game Systems", "21 <Add Entry>", "", "MainWindow"
+	submenu "Emu", "Other", "22 <Add Entry>", "", "MainWindow"
+	submenu "Games", "Adventure Games",  "30 <Add Entry>","", "MainWindow"
+	submenu "Games", "Demos",  "31 <Add Entry>","", "MainWindow"
+	submenu "Games", "Board Games",  "32 <Add Entry>","", "MainWindow"
+	submenu "Games", "Card Games",  "33 <Add Entry>","", "MainWindow"
+	submenu "Games", "Children's Games",  "34 <Add Entry>","", "MainWindow"
+	submenu "Games", "Puzzle Games",  "35 <Add Entry>","", "MainWindow"
+	submenu "Games", "Role Playing Games",  "36 <Add Entry>","", "MainWindow"
+	submenu "Games", "Strategy Games",  "37 <Add Entry>","", "MainWindow"
+	submenu "Games", "Text Based Games",  "38 <Add Entry>","", "MainWindow"
+	submenu "Games", "Other",  "39 <Add Entry>","", "MainWindow"
+	submenu "Grfx", "3D Tools", "40 <Add Entry>", "", "MainWindow"
+	submenu "Grfx", "Bitmap Editors", "41 <Add Entry>", "", "MainWindow"
+	submenu "Grfx", "Effects", "42 <Add Entry>", "", "MainWindow"
+	submenu "Grfx", "Icon Tools", "43 <Add Entry>", "", "MainWindow"
+	submenu "Grfx", "Vector Editors", "44 <Add Entry>", "", "MainWindow"
+	submenu "Grfx", "Viewers", "45 <Add Entry>", "", "MainWindow"
+	submenu "Grfx", "Other", "46 <Add Entry>", "", "MainWindow"
+	submenu "PIM", "Accounting", "50 <Add Entry>", "", "MainWindow"
+	submenu "PIM", "Contact Management", "51 <Add Entry>", "", "MainWindow"
+	submenu "PIM", "Diaries & Journals", "52 <Add Entry>", "", "MainWindow"
+	submenu "PIM", "Scheduling Tools", "53 <Add Entry>", "", "MainWindow"
+	submenu "PIM", "Other", "54 <Add Entry>", "", "MainWindow"
+	submenu "Internet", "Bookmarks", "60 <Add Entry>", "", "MainWindow"
+	submenu "Internet", "Browsers", "61 <Add Entry>", "", "MainWindow"
+	submenu "Internet", "E-Mail", "62 <Add Entry>", "", "MainWindow"
+	submenu "Internet", "FTP", "63 <Add Entry>", "", "MainWindow"
+	submenu "Internet", "IM & IRC", "64 <Add Entry>", "", "MainWindow"
+	submenu "Internet", "Newsreaders", "65 <Add Entry>", "", "MainWindow"
+	submenu "Internet", "Social Networking", "66 <Add Entry>", "", "MainWindow"
+	submenu "Internet", "Other", "67 <Add Entry>", "", "MainWindow"
+	submenu "Work", "Calculators", "70 <Add Entry>", "", "MainWindow"
+	submenu "Work", "Databases", "71 <Add Entry>", "", "MainWindow"
+	submenu "Work", "Desktop Publishing", "72 <Add Entry>", "", "MainWindow"
+	submenu "Work", "Favourite Documents", "73 <Add Entry>", "", "MainWindow"
+	submenu "Work", "Office Suites", "74 <Add Entry>", "", "MainWindow"
+	submenu "Work", "Spreadsheets", "75 <Add Entry>", "", "MainWindow"
+	submenu "Work", "Text Editors", "76 <Add Entry>", "", "MainWindow"
+	submenu "Work", "Web Development", "77 <Add Entry>", "", "MainWindow"
+	submenu "Work", "Word Processors", "78 <Add Entry>", "", "MainWindow"
+	submenu "Work", "Other", "79 <Add Entry>", "", "MainWindow"
+	submenu "Utils", "CD & DVD", "80 <Add Entry>", "", "MainWindow"
+	submenu "Utils", "CLI & Shell", "81 <Add Entry>", "", "MainWindow"
+	submenu "Utils", "Compressors", "82 <Add Entry>", "", "MainWindow"
+	submenu "Utils", "Desktop Accessories", "83 <Add Entry>", "", "MainWindow"
+	submenu "Utils", "Preferences", "84 <Add Entry>", "", "MainWindow"
+	submenu "Utils", "System Info", "85 <Add Entry>", "", "MainWindow"
+	submenu "Utils", "Other", "86 <Add Entry>", "", "MainWindow"
+	submenu "Video", "Conversion",  "90 <Add Entry>", "", "MainWindow"
+	submenu "Video", "Editors",  "91 <Add Entry>", "", "MainWindow"
+	submenu "Video", "Effects",  "92 <Add Entry>", "", "MainWindow"
+	submenu "Video", "Players",  "93 <Add Entry>", "", "MainWindow"
+	submenu "Video", "Recorders",  "94 <Add Entry>", "", "MainWindow"
+	submenu "Video", "Other",  "95 <Add Entry>", "", "MainWindow"
+end sub
+
+sub MakeNewMenuEntry(theline$)
+	local a$(1), b$(1), c$(5), tokena, tokenb, tokenc, thepath$, thecategory$, theentry$, thepreface$, theepilogue$, concat$
+	theepilogue$ = ",,MainWindow"
+	tokena = token(theline$, a$(), "\t")
+	thepath$ = a$(1)
+	thecategory$ = a$(2)
+	tokenb = token(thepath$, b$(),"/")
+	theentry$ = b$(tokenb)
+		for f = 1 to 69
+		if category$(f) = thecategory$ then
+			thepreface$ = preface$(f)
+		endif
+	next f
+	concat$ =  thepreface$ + theentry$ + theepilogue$
+	tokenc= split(concat$, c$(), ",")
+	submenu c$(1),c$(2),c$(3),c$(4),c$(5)  
+end sub
+
+sub MakeStandardFile()
+	local pathname$, category$
+	restore StandardApps
+	open ConfigStandardFile$ for writing as #1
+		repeat
+			read pathname$
+			read category$
+			if pathname$ <> "end_of_data" then
+				print #1 pathname$ + "\t" + category$
+			endif
+		until(pathname$ = "end_of_data")
+	close #1
+end sub
+
+sub OpenTracker(Pathname$)
+	local whereismyfile$
+	whereismyfile$=system$("if test -e '" + Pathname$ +"'; then echo yeah; else echo nope;fi")
+	if left$(whereismyfile$,1)="n" then 
+		alert "That directory is not present on this system", "OK", "info"
+		return
+	endif
+	whereismyfile$=system$("if test -d '" + Pathname$ +"'; then echo yeah; else echo nope;fi")
+	if left$(whereismyfile$,1)="n" then 
+		alert "Something with that name is present on this system, but it does not look like a directory", "OK", "info"
+		return
+	endif
+	system("/boot/system/Tracker '"  + Pathname$ +"' &")
+end sub
+
+sub OpenWindow()
+	//Setup the main window here
+	local screenwidth, startx, endx
+	screenwidth = peek("DesktopWidth")
+	startx = (screenwidth/2)-255
+	endx = startx + 510
+	window open startx,1 to endx,21, "MainWindow", "Main Window"
+	window set "MainWindow", "look", "bordered"
+	window set "MainWindow", "feel", "floating-all"
+	window set "MainWindow", "flags", "Not-Closable, Not-Zoomable, Not-Minimizable, Not-Resizable, Accept-First-Click"
+	window set "MainWindow", "workspace", "all"
+	MakeMenu()
+end sub
+
+sub RemoveDropzone()
+	//will also work to remove the editor window
+	If view get "DropView", "exists" View Remove "DropView"
+	If view get "EditView", "exists" View Remove "EditView"
+	Window set "MainWindow", "resizeto", 510, 21
+end sub
+
+sub SaveNewCFG()
+	local items
+	items = listbox count "EntryDeleteBox"
+	open ConfigFile$ for writing as #1
+		for f = 1 to items
+			Print #1 listbox get$ "EntryDeleteBox", f
+		next f
+end sub
+
+sub SaveNewMenuEntry(theline$)
+	open #1,ConfigFile$, "a"
+		print #1 theline$
+	close#1
+	option set "DropCancelButton", "visible", 0
+	for f = 1 to 5
+		option set "DropFlashButton", "visible", 1
+		wait 0.25
+		option set "DropFlashButton", "visible", 0
+		wait 0.1
+	next f
+end sub
+
+sub ShowHelp()
+	local TempfilePath$, File2Write, Helpline$
+	TempfilePath$ = system$("finddir B_COMMON_TEMP_DIRECTORY") 
+	TempfilePath$ = left$(TempfilePath$, len(TempfilePath$)-1) //strip off trailing newline
+	File2Write$ = TempfilePath$ + "/" + "MenuBarHelp.html"	
+	restore helpdata
+		Open File2Write$ for writing as #9
+		while(Helpline$ <> "end_of_data")
+		read Helpline$
+		if Helpline$ <> "end_of_data" print #9 Helpline$
+		wend
+	close #9
+	launch File2Write$
+end sub
+
+########################################
+###DATA statements, if any, come here###
+########################################
+
+label StandardApps
+data "/boot/system/apps/AboutSystem", "85"
+data "/boot/system/apps/ActivityMonitor", "85"
+data "/boot/system/apps/BootManager", "86"
+data "/boot/system/apps/CDPlayer", "03"
+data "/boot/system/apps/CharacterMap", "79"
+data "/boot/system/apps/CodyCam", "95"
+data "/boot/system/apps/Debugger", "13"
+data "/boot/system/apps/DeskCalc", "70"
+data "/boot/system/apps/Devices", "85"
+data "/boot/system/apps/DiskProbe", "85"
+data "/boot/system/apps/DiskUsage", "85"
+data "/boot/system/apps/DriveSetup", "86"
+data "/boot/system/apps/Expander", "82"
+data "/boot/system/apps/GLInfo", "85"
+data "/boot/system/apps/HaikuDepot", "86"
+data "/boot/system/apps/Icon-O-Matic", "43"
+data "/boot/system/apps/Installer", "86"
+data "/boot/system/apps/LaunchBox", "83"
+data "/boot/system/apps/Magnify", "45"
+data "/boot/system/apps/Mail", "62"
+data "/boot/system/apps/MediaConverter", "90"
+data "/boot/system/apps/MediaConverter", "01"
+data "/boot/system/apps/MediaPlayer", "03"
+data "/boot/system/apps/MediaPlayer", "93"
+data "/boot/system/apps/MidiPlayer", "02"
+data "/boot/system/apps/NetworkStatus", "83"
+data "/boot/system/apps/PackageInstaller", "86"
+data "/boot/system/apps/People", "51"
+data "/boot/system/apps/PoorMan", "67"
+data "/boot/system/apps/PowerStatus", "83"
+data "/boot/system/apps/ProcessController", "83"
+data "/boot/system/apps/Screenshot", "46"
+data "/boot/system/apps/SerialConnect", "67"
+data "/boot/system/apps/ShowImage", "45"
+data "/boot/system/apps/SoundRecorder", "05"
+data "/boot/system/apps/StyledEdit", "76"
+data "/boot/system/apps/Terminal", "81"
+data "/boot/system/apps/TextSearch", "85"
+data "/boot/system/apps/TV", "93"
+data "/boot/system/apps/Workspaces", "83"
+data "/boot/system/apps/WebPositive", "61"
+data "/boot/system/add-ons/Tracker/ZipOMatic", "82"
+data "/boot/system/apps/Pe/Pe", "10"
+data "/boot/system/preferences/KeymapSwitcher", "84"
+data "/boot/system/preferences/Time", "84"
+data "/boot/system/preferences/Shortcuts", "84"
+data "/boot/system/preferences/Screen", "84"
+data "/boot/system/preferences/Notifications", "84"
+data "/boot/system/preferences/Mouse", "84"
+data "/boot/system/preferences/Locale", "84"
+data "/boot/system/preferences/Keyboard", "84"
+data "/boot/system/preferences/E-mail", "84"
+data "/boot/system/preferences/DataTranslations", "84"
+data "/boot/system/preferences/Backgrounds", "84"
+data "/boot/system/preferences/Appearance", "84"
+data "/boot/system/preferences/CPUFrequency", "84"
+data "/boot/system/preferences/Deskbar", "84"
+data "/boot/system/preferences/FileTypes", "84"
+data "/boot/system/preferences/Keymap", "84"
+data "/boot/system/preferences/Media", "84"
+data "/boot/system/preferences/Network", "84"
+data "/boot/system/preferences/Printers", "84"
+data "/boot/system/preferences/ScreenSaver", "84"
+data "/boot/system/preferences/Sounds", "84"
+data "/boot/system/preferences/Touchpad", "84"
+data "/boot/system/preferences/Tracker", "84"
+data "/boot/system/preferences/VirtualMemory", "84"
+
+data "/boot/system/demos/Playground", "31"
+data "/boot/system/demos/Pairs", "31"
+data "/boot/system/demos/Mandelbrot", "31"
+data "/boot/system/demos/GLTeapot", "31"
+data "/boot/system/demos/Cortex", "31"
+data "/boot/system/demos/Chart", "31"
+data "/boot/system/demos/BSnow", "31"
+data "/boot/system/demos/Clock", "31"
+data "/boot/system/demos/FontDemo", "31"
+data "/boot/system/demos/Haiku3d", "31"
+data "/boot/system/demos/OverlayImage", "31"
+data "/boot/system/demos/PatchBay", "31"
+data "/boot/system/demos/Pulse", "31"
+data "/boot/system/demos/Sudoku", "31"
+data "end_of_data", "end_of_data"
+
+label Categories
+data "00","Audio,Editors,"
+data "01","Audio,Encoders,"
+data "02","Audio,MIDI,"
+data "03","Audio,Players,"
+data "04","Audio,Playlists,"
+data "05","Audio,Recorders,"
+data "06","Audio,Sequencers,"
+data "07","Audio,Synthesizers,"
+data "08","Audio,Other,"
+data "10","Dev,Editors,"
+data "11","Dev,IDEs,"
+data "12","Dev,GUI Builders,"
+data "13","Dev,Other,"
+data "20","Emu,Computers,"
+data "21","Emu,Game Systems,"
+data "22","Emu,Other,"
+data "30","Games,Adventure Games,"
+data "31","Games,Demos,"
+data "32","Games,Board Games,"
+data "33","Games,Card Games,"
+data "34","Games,Children's Games,"
+data "35","Games,Puzzle Games,"
+data "36","Games,Role Playing Games,"
+data "37","Games,Strategy Games,"
+data "38","Games,Text Based Games,"
+data "39","Games,Other,"
+data "40","Grfx,3D Tools,"
+data "41","Grfx,Bitmap Editors,"
+data "42","Grfx,Effects,"
+data "43","Grfx,Icon Tools,"
+data "44","Grfx,Vector Editors,"
+data "45","Grfx,Viewers,"
+data "46","Grfx,Other,"
+data "50","PIM,Accounting,"
+data "51","PIM,Contact Management,"
+data "52","PIM,Diaries & Journals,"
+data "53","PIM,Scheduling Tools,"
+data "54","PIM,Other,"
+data "60","Internet,Bookmarks,"
+data "61","Internet,Browsers,"
+data "62","Internet,E-Mail,"
+data "63","Internet,FTP,"
+data "64","Internet,IM & IRC,"
+data "65","Internet,Newsreaders,"
+data "66","Internet,Social Networking,"
+data "67","Internet,Other,"
+data "70","Work,Calculators,"
+data "71","Work,Databases,"
+data "72","Work,Desktop Publishing,"
+data "73","Work,Favourite Documents,"
+data "74","Work,Office Suites,"
+data "75","Work,Spreadsheets,"
+data "76","Work,Text Editors,"
+data "77","Work,Web Development,"
+data "78","Work,Word Processors,"
+data "79","Work,Other,"
+data "80","Utils,CD & DVD,"
+data "81","Utils,CLI & Shell,"
+data "82","Utils,Compressors,"
+data "83","Utils,Desktop Accessories,"
+data "84","Utils,Preferences,"
+data "85","Utils,System Info,"
+data "86","Utils,Other,"
+data "90","Video,Conversion,"
+data "91","Video,Editors,"
+data "92","Video,Effects,"
+data "93","Video,Players,"
+data "94","Video,Recorders,"
+data "95","Video,Other,"
+data "end_of_data", "end_of_data"
+
+label Paths
+
+data "/boot/system/data/deskbar/menu/Applications/"
+data "/boot/home/config/data/deskbar/menu/Applications/"
+data "/boot/home/config/settings/deskbar/menu/Applications/"
+data "/boot/system/data/deskbar/menu/Preferences/"
+data "/boot/home/config/data/deskbar/menu/Preferences/"
+data "/boot/home/config/settings/deskbar/menu/Preferences/"
+data "/boot/system/data/deskbar/menu/Demos/"
+data "/boot/home/config/data/deskbar/menu/Demos/"
+data "/boot/home/config/settings/deskbar/menu/Demos/"
+data "/boot/system/data/deskbar/menu/Desktop applets/"
+data "/boot/home/config/data/deskbar/menu/Desktop applets/"
+data "/boot/home/config/settings/deskbar/menu/Desktop applets/"
+data "/boot/home/config/settings/deskbar/menu/Documents/"
+
+label helpdata
+
+data "<!doctype html public \"-//W3C//DTD HTML 4.0 Transitional //EN\">"
+data "<html>"
+data "<head>"
+data "  <meta name=\"GENERATOR\" content=\"mkd2html 2.1.2 DL=DISCOUNT\">"
+data "  <meta http-equiv=\"Content-Type\""
+data "        content=\"text/html; charset-us-ascii\">  <title>MenuBar Help</title>"
+data "</head>"
+data "<body>"
+data "<h1>MenuBar</h1>"
+data "<h2>A Desktop Accessory for Haiku</h2>"
+data "<p>Version 0.1</p>"
+data "<p>I enjoy accessing my applications from a hierarchical menu. I also enjoy writing applications with very minimal interfaces. These two preferences come together in MenuBar.</p>"
+data "<p>Back in the BeOS days (and in Haiku before Package Management), we could mess around in the Deskbar to our heart&rsquo;s content, setting up subdirectories to reflect the way we wanted to categorize our apps.</p>"
+data "<p>No longer. Shortcuts to apps are now kept in three separate locations, and two of them are not editable by the user. The deskbar&rsquo;s single Applications menu quickly becomes an endlessly scrolling list of apps. This is where MenuBar comes in.</p>"
+data "<h2>To Install:</h2>"
+data "<p>Move (don&rsquo;t copy) the .hpkg inside the zipfile to /boot/home/config/packages. You can now run MenuBar from the Desktop applets menu in the Deskbar. Once you have it running, you will have the opportunity to set it to autorun on bootup.</p>"
+data "<h2>Running MenuBar:</h2>"
+data "<p>When you start MenuBar, it presents a thin, unobtrusive menu across your screen. This menu will appear in all workspaces. All the action, however, is in the gear menu (⚙) on the right.</p>"
+data "<p>MenuBar automatically installs the applications that come with a standard Nightly Haiku PM installation (this will be expanded when a PM official distro is released). These entries cannot be removed from the menus.</p>"
+data "<p>The other menus will be filled in by you, with the apps you want to have at your fingertips.</p>"
+data "<p>The first three menu options open Tracker windows in the various locations Deskbar uses now. Not all the folders in this menu structure will necessarily exist on your particular system. That depends on what apps you have installed.</p>"
+data "<p><strong>Haiku PM Folders</strong>: This hierarchy starts at /boot/system/data/deskbar/menu and it contains apps that come with the Haiku distribution or that were installed by HaikuDepot.</p>"
+data "<p><strong>User PM Folders</strong>; This hierarchy starts at /boot/home/config/data/deskbar/menu and contains links to .hpkg files you have downloaded and installed yourself. Such as my <a href=\"http://mysite.mweb.co.za/residents/clasqm/haiku/index.html\">other programs</a>.</p>"
+data "<p><strong>User non-PM Folders</strong>: This hierarchy starts at /boot/home/config/settings/deskbar/menu and is the one place that is user-editable. It is intended for old-style programs that are not distributed as .hpkg files.</p>"
+data "<p>Let&rsquo;s say you have installed my alternative yab IDE <a href=\"http://mysite.mweb.co.za/residents/clasqm/haiku/yab-apps/yabadabbadoo.html\">Yabadabbadoo</a> and you want to add it to MenuBar. From the gear menu, do the following:</p>"
+data "<pre><code>Open User PM Folders | Applications"
+data "</code></pre>"
+data "<p>Now go to the <em>Dev</em> (for Development) menu, select <em>IDEs</em>, then <em>11 &lt;Add Entry></em>. A dropzone opens up where you can drop the Yabadabbadoo icon. If you check <em>Dev | IDEs</em> again, Yabadabbadoo is now available. Click on it to run the program.</p>"
+data "<p>You can theoretically drag in applications, scripts and documents from anywhere on your system, but MenuBar will <em>only</em> launch files that are somewhere in the Deskbar&rsquo;s triple structure. So it is better to drag them in from there in the first place.</p>"
+data "<p><em>Note: I suggest you create the folder /boot/home/config/settings/deskbar/menu/Documents (case-sensitive!). It will show up in the Deskbar and you can put links to your favourite documents in there - the ones you work with daily. MenuBar will check to see if this directory exists and you will be able to make links to area 73 from it.</em></p>"
+data "<p>If the categories look vaguely familiar, that is because they were based loosely on those used at Haikuware.</p>"
+data "<p><strong>Remove Entries</strong>: Pretty much what it says. Requires a restart  of MenuBar</p>"
+data "<p><strong>Restore Haiku Standard Set</strong>: Remove all user-added menu additions. Requires a restart  of MenuBar.</p>"
+data "<p><strong>Start MenuBar on Bootup</strong>: This toggles whether you want Menubar to start automatically when you start Haiku. it creates (or removes) a symlink to the program in /boot/home/config/settings/boot/launch.</p>"
+data "<p><strong>Quit MenuBar</strong>: Why would you want to?</p>"
+data "<p><strong>Updates</strong>: Phones home to see if a more recent version of the program is available. No information is sent to the update servers.</p>"
+data "<p><strong>Help</strong>: You&rsquo;re here, aren&rsquo;t you?</p>"
+data "<p><strong>About</strong>: Just a little info dialog.</p>"
+data "<h2>Future Developments:</h2>"
+data "<p>This version of MenuBar does not sort the menu entries. I&rsquo;m working on it.</p>"
+data "<p>Public Domain Software 2014.</p>"
+data "</body>"
+data "end_of_data"

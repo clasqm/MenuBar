@@ -1,0 +1,24 @@
+sub FileIsHere$(FullPath$, MenuItem$)
+	local whereismyfile$,searchpath$
+	if FullPath$ <>"" then
+		whereismyfile$=system$("if test -e '" + FullPath$ + "'; then echo yeah; else echo nope;fi")
+			if left$(whereismyfile$,1)="y" then 
+				return FullPath$
+			else
+				return "notfound" 
+			endif
+	elseif MenuItem$ <> "" then
+		restore Paths
+		for f = 1 to 12
+			read searchpath$
+			searchpath$ = searchpath$ + MenuItem$
+			whereismyfile$=system$("if test -e '" + searchpath$ + "'; then echo yeah; else echo nope;fi")
+			if left$(whereismyfile$,1)="y" then 
+				return searchpath$
+			endif
+		next f
+	else
+		return "notfound"	
+	endif
+end sub
+

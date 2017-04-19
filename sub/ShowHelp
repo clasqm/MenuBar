@@ -1,0 +1,15 @@
+sub ShowHelp()
+	local TempfilePath$, File2Write, Helpline$
+	TempfilePath$ = system$("finddir B_COMMON_TEMP_DIRECTORY") 
+	TempfilePath$ = left$(TempfilePath$, len(TempfilePath$)-1) //strip off trailing newline
+	File2Write$ = TempfilePath$ + "/" + "MenuBarHelp.html"	
+	restore helpdata
+		Open File2Write$ for writing as #9
+		while(Helpline$ <> "end_of_data")
+		read Helpline$
+		if Helpline$ <> "end_of_data" print #9 Helpline$
+		wend
+	close #9
+	launch File2Write$
+end sub
+

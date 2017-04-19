@@ -1,0 +1,117 @@
+
+//Yabadabbadoo notification
+########DO NOT RENAME THIS FILE!########
+//Yabadabbadoo needs it to function.
+
+//Main Message Loop
+dim msg$(1)
+while(not leavingLoop)
+	nCommands = token(message$, msg$(), "|")
+	for everyCommand = 1 to nCommands
+		if(DEBUG and msg$(everyCommand)<>"") print msg$(everyCommand)
+		switch(msg$(everyCommand))
+			case "_QuitRequested":
+			case "MainWindow:⚙:Quit MenuBar":
+				leavingLoop = true
+				break
+			case "DropCancelButton":
+				RemoveDropzone()
+				break
+			case "EntryDeleteButton"
+				DeleteItem()
+				break
+			case "EntrySaveButton"
+				SaveNewCFG()
+				RemoveDropzone()
+				break
+			case "MainWindow:⚙:Open Haiku PM folders:Applications":
+				OpenTracker(HPMAppsDir$)
+				break
+			case "MainWindow:⚙:Open Haiku PM folders:Demos":
+				OpenTracker(HPMDemosDir$)
+				break
+			case "MainWindow:⚙:Open Haiku PM folders:Desktop applets":
+				OpenTracker(HPMAppletsDir$)
+				break
+			case "MainWindow:⚙:Open Haiku PM folders:Preferences":
+				OpenTracker(HPMPrefsDir$)
+				break
+			case "MainWindow:⚙:Open User PM folders:Applications":
+				OpenTracker(UPMAppsDir$)
+				break
+			case "MainWindow:⚙:Open User PM folders:Demos":
+				OpenTracker(UPMDemosDir$)
+				break
+			case "MainWindow:⚙:Open User PM folders:Desktop applets":
+				OpenTracker(UPMAppletsDir$)
+				break
+			case "MainWindow:⚙:Open User PM folders:Preferences":
+				OpenTracker(UPMPrefsDir$)
+				break
+			case "MainWindow:⚙:Open User non-PM folders:Applications":
+				OpenTracker(UnPMAppsDir$)
+				break
+			case "MainWindow:⚙:Open User non-PM folders:Demos":
+				OpenTracker(UnPMDemosDir$)
+				break
+			case "MainWindow:⚙:Open User non-PM folders:Desktop applets":
+				OpenTracker(UnPMAppletsDir$)
+				break
+			case "MainWindow:⚙:Open User non-PM folders:Preferences":
+				OpenTracker(UnPMPrefsDir$)
+				break
+			case "MainWindow:⚙:Open User non-PM folders:Documents":
+				OpenTracker(UnPMDocsDir$)
+				break
+			case "MainWindow:⚙:Help":
+				ShowHelp()
+				break
+				case "MainWindow:⚙:Start MenuBar on Bootup":
+				MakeBootStatus()
+				break
+			case "MainWindow:⚙:About":
+				Alert ProgramName$ + " " + ProgramVersion$ + "\n" + "by " + AuthorName$ +"\n\n" + ProgramBriefDescription$ + "\n\n" + ProgramLicense$ + "\n\n" + ProgramAcknowledgements$, "OK", "none"
+				break
+			case "MainWindow:⚙:Restore Haiku standard set":
+				tempval = alert "Are you sure you want to go back to the apps that are included in a Haiku nightly distribution ONLY, removing ALL custom additions", "Yes", "No", "", "warning"
+				if tempval = 1 then
+					system("rm -f " + ConfigFile$)
+					Alert "You need to exit MenuBar and restart it to activate this change.", "OK", "info"
+				endif
+				break
+			case "MainWindow:⚙:Updates":
+				FindUpdates()
+				break
+			case "MainWindow:⚙:Remove Entries":
+				MakeEditor()
+				break
+			default:
+				break
+		end switch
+		//#####other commands#####
+		if right$(msg$(everyCommand), 11) = "<Add Entry>" then
+			GetSelectionDetails(msg$(everyCommand))
+			MakeDropzone()
+			break
+		elseif left$(msg$(everyCommand), 18) = "DropView:_Dropped:" then
+			MakeNewMenuEntry(mid$(msg$(everyCommand), 19) + "\t" + SelectedGroupNumber$)
+			SaveNewMenuEntry(mid$(msg$(everyCommand), 19) + "\t" + SelectedGroupNumber$)
+			RemoveDropzone()
+			break
+		elseif (msg$(everyCommand)) = "MainWindow:_Activated"
+			//Window set "MainWindow", "BGColor", 216,216,216
+			break 
+		elseif (msg$(everyCommand)) = "MainWindow:_Deactivated"
+			//Window set "MainWindow", "BGColor", 51,102,152
+			break 
+		else
+			LaunchIt(msg$(everyCommand))
+		endif
+	
+	next everyCommand
+wend
+
+CloseWindow()
+
+exit
+

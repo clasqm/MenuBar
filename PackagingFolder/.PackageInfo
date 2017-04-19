@@ -1,0 +1,20 @@
+urls {
+				http://clasquin-johnson.co.za/michel/haiku
+}name				MenuBar
+version				0.1-1
+architecture		x86_gcc2
+
+summary			"A menu for the Haiku Desktop"
+Description			"This Desktop applet allows the user to present the contents of the deskbar as a hierarchical menu."
+
+packager			"Michel Clasquin-Johnson <clasqm@gmail.com>"
+vendor				"clasqm"
+copyrights			"Michel Clasquin-Johnson"
+licenses			"Public Domain"
+provides {
+					MenuBar = 0.1-1
+}
+
+urls {
+				http://clasquin-johnson.co.za/michel/haiku
+}

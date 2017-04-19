@@ -1,0 +1,7 @@
+sub DeleteItem()
+	local item
+	item = listbox get "EntryDeleteBox"
+	if item = 0 return
+	listbox remove "EntryDeleteBox", item
+end sub
+

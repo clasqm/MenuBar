@@ -1,0 +1,7 @@
+sub RemoveDropzone()
+	//will also work to remove the editor window
+	If view get "DropView", "exists" View Remove "DropView"
+	If view get "EditView", "exists" View Remove "EditView"
+	Window set "MainWindow", "resizeto", 510, 21
+end sub
+

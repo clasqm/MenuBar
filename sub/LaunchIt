@@ -1,0 +1,18 @@
+sub LaunchIt(thecommand$)
+	local w$(4),tokena,trythis$
+	tokena = token(thecommand$, w$(), ":")
+	Restore Paths
+	for f = 1 to 13
+		read trythis$
+		trythis$ = w$(tokena)
+		trythis$ = FileIsHere$("", trythis$)
+		if trythis$ <> "notfound" break
+	next f
+	if trythis$ = "notfound" then
+		alert "Program was not found on this system.", "OK", "info"
+		return 
+	else
+		launch trythis$
+	endif
+end sub
+

@@ -1,0 +1,15 @@
+sub OpenTracker(Pathname$)
+	local whereismyfile$
+	whereismyfile$=system$("if test -e '" + Pathname$ +"'; then echo yeah; else echo nope;fi")
+	if left$(whereismyfile$,1)="n" then 
+		alert "That directory is not present on this system", "OK", "info"
+		return
+	endif
+	whereismyfile$=system$("if test -d '" + Pathname$ +"'; then echo yeah; else echo nope;fi")
+	if left$(whereismyfile$,1)="n" then 
+		alert "Something with that name is present on this system, but it does not look like a directory", "OK", "info"
+		return
+	endif
+	system("/boot/system/Tracker '"  + Pathname$ +"' &")
+end sub
+

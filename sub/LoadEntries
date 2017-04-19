@@ -1,0 +1,29 @@
+sub LoadEntries()
+local redc, greenc, bluec
+	Window set "MainWindow", "resizeto", 510, 121
+	If view get "DropView", "exists" view remove "DropView"
+	if view get "EditView", "exists" View Remove "EditView"
+	View 0,22 to 510,121, "DropView", "MainWindow"
+	redc = 241
+	greenc = 196
+	bluec = 59
+	for f = 0 to 100 step 2
+		draw set "highcolor", redc, greenc, bluec, "DropView"
+		draw line 0, f to 510,f, "DropView"
+	next f
+	Draw set "highcolor", 0,0,0, "DropView"
+	Text 45,15 to 465,35, "Droplabel", "Creating Database of standard Haiku programs.", "DropView"
+	text set "Droplabel", "align-center":
+	MakeStandardFile()
+	wait 0.1
+	Text 45,40 to 465,60, "Droplabel2", "Entering Standard Programs into menu structure.", "DropView"
+	text set "Droplabel2", "align-center"
+	EnterStandardApps()
+	wait 0.1
+	Text 45,65 to 465,85, "Droplabel3", "Entering user-added menu entries into menu structure.", "DropView"
+	text set "Droplabel3", "align-center"
+	EnterAppsFromFile(ConfigFile$)
+	wait 0.3
+	RemoveDropzone()
+end sub
+

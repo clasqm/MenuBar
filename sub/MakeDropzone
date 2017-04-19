@@ -1,0 +1,23 @@
+sub MakeDropzone()
+	local redc, greenc, bluec
+	Window set "MainWindow", "resizeto", 510, 121
+	If view get "DropView", "exists" view remove "DropView"
+	if view get "EditView", "exists" View Remove "EditView"
+	View 0,22 to 510,121, "DropView", "MainWindow"
+	Text 45,15 to 465,35, "Droplabel", "Drop your program, shortcut or script into this space.", "DropView"
+	Text 45,40 to 465,60, "Droplabel2", "Your drop will be added to " + SelectedGroupLabel$ + ".", "DropView"
+	text set "Droplabel", "align-center": text set "Droplabel2", "align-center"
+	redc = 241
+	greenc = 196
+	bluec = 59
+	for f = 0 to 100 step 2
+		draw set "highcolor", redc, greenc, bluec, "DropView"
+		draw line 0, f to 510,f, "DropView"
+	next f
+	Draw set "highcolor", 0,0,0, "DropView"
+	View Dropzone "DropView"
+	Button 110,67 to 390,94, "DropCancelButton", "I changed my mind! Cancel this drop.", "DropView"
+	Button 110,23 to 390,50, "DropFlashButton", "Your program has been added and saved.", "DropView" 
+	option set "DropFlashButton", "visible", 0
+end sub
+

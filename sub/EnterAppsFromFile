@@ -1,0 +1,15 @@
+sub EnterAppsFromFile(filename$)
+	filename$ = FileIsHere$(filename$, "")
+	if filename$ = "notfound" then 
+		alert "Configuration File not found!", "OK", "warning"
+		return
+	else
+		open filename$ for reading as #1
+		while (not(eof(1)))
+			line input #1 getline$
+			if getline$ <> "" MakeNewMenuEntry(getline$)
+		wend
+		close #1
+	endif	
+end sub
+

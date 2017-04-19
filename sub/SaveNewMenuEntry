@@ -1,0 +1,13 @@
+sub SaveNewMenuEntry(theline$)
+	open #1,ConfigFile$, "a"
+		print #1 theline$
+	close#1
+	option set "DropCancelButton", "visible", 0
+	for f = 1 to 5
+		option set "DropFlashButton", "visible", 1
+		wait 0.25
+		option set "DropFlashButton", "visible", 0
+		wait 0.1
+	next f
+end sub
+

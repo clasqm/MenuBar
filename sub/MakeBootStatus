@@ -1,0 +1,8 @@
+sub MakeBootStatus()
+	local isit
+	isit = CheckBootStatus()
+	if isit = 0 system("ln -sf /boot/home/config/apps/MenuBar /boot/home/config/settings/boot/launch")
+	if isit = 1 system("rm -f /boot/home/config/settings/boot/launch/MenuBar")
+	CheckBootStatus()
+end sub
+

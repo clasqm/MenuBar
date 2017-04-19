@@ -1,0 +1,13 @@
+sub EnterStandardApps()
+	//while we do this, set up the arrays for later use.
+	local preface$, category$, getline$
+	restore Categories
+	for f = 1 to 69
+		read category$
+		read preface$
+		category$(f) = category$
+		preface$(f) = preface$
+		next f
+	EnterAppsFromFile(ConfigStandardFile$)
+end sub
+

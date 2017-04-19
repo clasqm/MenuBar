@@ -1,0 +1,14 @@
+sub OpenWindow()
+	//Setup the main window here
+	local screenwidth, startx, endx
+	screenwidth = peek("DesktopWidth")
+	startx = (screenwidth/2)-255
+	endx = startx + 510
+	window open startx,1 to endx,21, "MainWindow", "Main Window"
+	window set "MainWindow", "look", "bordered"
+	window set "MainWindow", "feel", "floating-all"
+	window set "MainWindow", "flags", "Not-Closable, Not-Zoomable, Not-Minimizable, Not-Resizable, Accept-First-Click"
+	window set "MainWindow", "workspace", "all"
+	MakeMenu()
+end sub
+

@@ -1,0 +1,12 @@
+sub GetSelectionDetails(Selection$)
+	local w$(4),tokens
+	tokens = token(Selection$, w$(),":")
+	if tokens <>4 then
+		alert "An unknown error has occurred", "OK", "warning"
+		return
+	endif
+	SelectedGroupNumber$ = left$(w$(4), 2)
+	SelectedGroupLabel$ = w$(2) + " | " + SelectedGroupNumber$ + ". " + w$(3)
+	SelectedGroupCode$ = "MainWindow:" +  w$(2) + ":" + w$(3)+ ":"
+end sub
+

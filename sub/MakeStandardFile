@@ -1,0 +1,14 @@
+sub MakeStandardFile()
+	local pathname$, category$
+	restore StandardApps
+	open ConfigStandardFile$ for writing as #1
+		repeat
+			read pathname$
+			read category$
+			if pathname$ <> "end_of_data" then
+				print #1 pathname$ + "\t" + category$
+			endif
+		until(pathname$ = "end_of_data")
+	close #1
+end sub
+
